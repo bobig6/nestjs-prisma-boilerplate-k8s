@@ -140,12 +140,13 @@ jobs:
 
       - name: Change Kubernetes ConfigMap
         run: |
-          sed -i "s/\${DATABASE_URL}/${{ secrets.DATABASE_URL }}/g" k8s/configmap-template.yaml
-          sed -i "s/\${JWT_SECRET}/${{ secrets.JWT_SECRET }}/g" k8s/configmap-template.yaml
-          sed -i "s/\${AWS_ACCESS_KEY_ID}/${{ secrets.AWS_ACCESS_KEY_ID }}/g" k8s/configmap-template.yaml
-          sed -i "s/\${AWS_SECRET_ACCESS_KEY}/${{ secrets.AWS_SECRET_ACCESS_KEY }}/g" k8s/configmap-template.yaml
-          sed -i "s/\${AWS_S3_ENDPOINT}/${{ secrets.AWS_S3_ENDPOINT }}/g" k8s/configmap-template.yaml
-          sed -i "s/\${AWS_S3_BUCKET_NAME}/${{ secrets.AWS_S3_BUCKET_NAME }}/g" k8s/configmap-template.yaml
+          sed -i "s|${DATABASE_URL}|${{ secrets.DATABASE_URL }}|g" k8s/configmap-template.yaml
+          sed -i "s|${JWT_SECRET}|${{ secrets.JWT_SECRET }}|g" k8s/configmap-template.yaml
+          sed -i "s|${AWS_ACCESS_KEY_ID}|${{ secrets.AWS_ACCESS_KEY_ID }}|g" k8s/configmap-template.yaml
+          sed -i "s|${AWS_SECRET_ACCESS_KEY}|${{ secrets.AWS_SECRET_ACCESS_KEY }}|g" k8s/configmap-template.yaml
+          sed -i "s|${AWS_S3_ENDPOINT}|${{ secrets.AWS_S3_ENDPOINT }}|g" k8s/configmap-template.yaml
+          sed -i "s|${AWS_S3_BUCKET_NAME}|${{ secrets.AWS_S3_BUCKET_NAME }}|g" k8s/configmap-template.yaml
+
 
       - name: Deploy Kubernetes Resources
         run: |
