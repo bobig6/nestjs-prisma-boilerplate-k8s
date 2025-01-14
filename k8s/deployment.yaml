@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nestjs-boilerplate
+  labels:
+    app: nestjs-boilerplate
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nestjs-boilerplate
+  template:
+    metadata:
+      name: nestjs-boilerplate
+      labels:
+        app: nestjs-boilerplate
+    spec:
+      containers:
+        - name: nest-prisma-boilerplate
+          image: boyanii/nest-prisma-boilerplate:latest
+          imagePullPolicy: Always
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3030
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          ports:
+            - containerPort: 3030
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: nestjs-boilerplate-configmap
+      restartPolicy: Always
+      

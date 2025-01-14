@@ -98,89 +98,97 @@ npm run test:cov
 ```bash
 docker build -t nestjs-prisma-boilerplate .
 ```
-### **9. Deployment**
+### **9. Deployment with Docker and Minikube**
+This will show you how to deploy the application locally with minikube.
 
-To deploy the application to a server, follow these steps:
+- **Start Minikube**
+```bash
+minikube start
+```
 
-1. **Copy Deployment Script**:
-   Transfer the `example.deploy.sh` file to your server and modify it with your proper values
+- **Setup your configmap**
+You should copy the contents from k8s/configmap-template.yaml to a new file called k8s/configmap.yaml and replace the values with your own.
 
-    ```bash
-    #!/bin/bash
-    
-    # Ensure the script exits on any command failure
-    set -e
-    
-    # Define environment variables for the container
-    CONTAINER_NAME="my_container"
-    IMAGE_NAME="my_docker_image"
-    ENV_FILE="/path/to/.env"  # Path to your .env file
-    
-    # Pull the latest Docker image
-    echo "Pulling the latest image: $IMAGE_NAME"
-    docker pull $IMAGE_NAME
-    
-    # Stop and remove the currently running container if it exists
-    if [ "$(docker ps -q -f name=$CONTAINER_NAME)" ]; then
-        echo "Stopping running container: $CONTAINER_NAME"
-        docker stop $CONTAINER_NAME
-        echo "Removing container: $CONTAINER_NAME"
-        docker rm $CONTAINER_NAME
-    fi
-    
-    # Run the new container with environment variables
-    echo "Starting a new container: $CONTAINER_NAME"
-    docker run -d --name $CONTAINER_NAME -p 3030:3030 --env-file $ENV_FILE $IMAGE_NAME
-    
-    echo "Deployment complete. New container is running: $CONTAINER_NAME"
-    ```
+- **Create the configmap**
+```bash
+kubectl apply -f k8s/configmap.yaml
+```
 
-2. **Set Up Environment Variables**:
-   On your server, create an `.env` file using `.env.example` as a template:
+- **Apply the deployment and service**
+```bash
+kubectl apply -f k8s/deployment.yaml
+kubectl apply -f k8s/service.yaml
+```
 
-    ```bash
-    PORT=3030
-    
-    # Connect to Supabase via connection pooling with Supavisor.
-    DATABASE_URL=
-    # Direct connection to the database. Used for migrations.
-    DIRECT_URL=
-    
-    JWT_SECRET=
-    AWS_ACCESS_KEY_ID=
-    AWS_SECRET_ACCESS_KEY=
-    AWS_S3_REGION=
-    AWS_S3_ENDPOINT=
-    AWS_S3_BUCKET_NAME=
-    
-    NODE_ENV=development
-    ```
+- **Check the status of the deployment**
+```bash
+kubectl get pods
+kubectl get deployments
+kubectl get services
+```
 
-3. **Install Docker**:
-   Follow the official Docker installation guide for Ubuntu:
+- **Access the application**
+```bash
+minikube service nestjs-prisma-boilerplate-service
+```
 
-   [Docker Engine Installation on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
+### **10. Stop the application**
+- **Delete the deployment and service**
+```bash
+kubectl delete -f k8s/deployment.yaml
+kubectl delete -f k8s/service.yaml
+```
 
-4. **Make the Deployment Script Executable**:
-   On your server, make the deployment script executable:
+- **Delete the configmap**
+```bash
+kubectl delete -f k8s/configmap.yaml
+```
 
-    ```bash
-    chmod +x example.deploy.sh
-    ```
+- **Verify the deletion**
+```bash
+kubectl get all
+```
 
-5. **Run the Deployment Script**:
-   Execute the script to deploy the application:
+- **Stop Minikube**
+```bash
+minikube stop
+```
 
-    ```bash
-    ./example.deploy.sh
-    ```
+- **List the docker containers**
+```bash
+docker ps
+```
 
-6. **Configure Server Firewall Rules**:
-   Ensure your server's firewall rules allow inbound and outbound traffic on the application's port (default: 3030).
----
+- **Stop the docker container**
+```bash
+docker stop <container_id>
+```
+
+- **Remove the docker container**
+```bash
+docker rm <container_id>
+```
+
+- **Remove the docker image**
+```bash
+docker rmi <image_id>
+```
+
 
 ## **GitHub Actions Workflow**
 
+Before you can use the GitHub Actions workflows, you need to set up the following secrets in your repository:
+- `AWS_ACCESS_KEY_ID`: AWS Access Key ID.
+- `AWS_S3_BUCKET_NAME`: AWS S3 Bucket Name.
+- `AWS_S3_ENDPOINT`: AWS S3 Endpoint.
+- `AWS_SECRET_ACCESS_KEY`: AWS Secret Access Key.
+- `DATABASE_URL`: PostgreSQL database URL.
+- `DOCKER_PASSWORD`: Docker Hub password.
+- `DOCKER_USERNAME`: Docker Hub username.
+- `JWT_SECRET`: JWT secret key for authentication.
+- `SNYK_TOKEN`: Snyk API token.
+
+### **CI/CD Pipeline**
 - **Branches**:
     - `main`: Production-ready code.
     - `develop`: Pre-production branch.
@@ -192,6 +200,7 @@ To deploy the application to a server, follow these steps:
     - **Testing**: Executes unit and integration tests.
     - **Vulnerability Scans**: Uses Snyk and Trivy for security checks.
     - **Build and Push Docker Image**: Builds and pushes to Docker Hub.
+    - **Minikube**: Simulates a deployment with Kubernetes. It sets up a local cluster with Minikube and deploys the application. After that it stops the cluster and removes the deployment.
 
 ---
 
@@ -214,6 +223,7 @@ http://localhost:3000/health
 ## **Folder Structure**
 
 - **`prisma/`**: Prisma configuration and migrations.
+- **`k8s/`**: Kubernetes deployment files.
 - **`src/`**: Application source code.
   - **`decorators/`**: Custom decorators.
   - **`guards/`**: Auth guards.

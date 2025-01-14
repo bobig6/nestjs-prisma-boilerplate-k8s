@@ -45,6 +45,9 @@ lerna-debug.log*
 # deployment script
 deploy.sh
 
+# kubernetes configuration
+*/configmap.yaml
+
 # temp directory
 .temp
 .tmp
